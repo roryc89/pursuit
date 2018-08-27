@@ -31,7 +31,7 @@ newtype PathPackageName =
 instance Read PathPackageName where
   readsPrec _ str =
     case parsePackageName (pack str) of
-      Right n -> [(PathPackageName n, "")]
+      Right n -> [(PathPackageName n, "")] 
       Left _ -> []
 
 instance PathPiece PathPackageName where

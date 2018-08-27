@@ -41,7 +41,15 @@ partialParam = "partial"
 
 getSearchR :: Handler TypedContent
 getSearchR = do
-  query <- getQuery
+  query <- getQuery "q"
+  test1 <- getQuery "test1"
+  test2 <- getQuery "test2"
+
+  traceM "query"
+  traceShowM query
+  traceM "test1"
+  traceShowM test1
+
   npages <- getPages
   let limit = npages * resultsPerPage
 
@@ -49,6 +57,9 @@ getSearchR = do
     resultSets <- traverse ($ query) searchSources
     let interleavedResults = foldl' interleave [] resultSets
     return . take' limit . map fst $ interleavedResults
+
+  traceShowM "results"
+  traceShowM results
 
   let justThisPage = drop (resultsPerPage * (npages - 1)) results
 
@@ -90,9 +101,9 @@ getSearchR = do
         provideRep (jsonOutput justThisPage)
 
   where
-    getQuery :: Handler Text
-    getQuery = do
-      mquery <- lookupGetParam "q"
+    getQuery :: Text -> Handler Text
+    getQuery key = do
+      mquery <- lookupGetParam key
       case mquery of
         Nothing ->
           redirect HomeR
@@ -253,8 +264,8 @@ interleave (x@(_, scoreX):xs) (y@(_, scoreY):ys) =
 searchSources :: [Text -> Handler [(SearchResult, Int)]]
 searchSources =
   map conv
-    [ searchForName
-    , searchForType
+    -- [ searchForName
+    [ searchForType
     ]
   where
   conv :: (Text -> SearchIndex -> [(SearchResult, Int)]) ->
@@ -315,7 +326,8 @@ searchResultHtml fr r =
             #{moduleName}
   |]
   where
-  pkgName =
+  _ = traceShow pkgName "helo"
+  pkgName = traceShow "trace" $
     case srSource r of
       SourceBuiltin ->
         "<builtin>"

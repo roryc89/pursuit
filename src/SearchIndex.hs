@@ -338,11 +338,20 @@ searchForType query =
 
 searchForType' :: P.Type -> SearchIndex -> [(SearchResult, Int)]
 searchForType' ty =
+  -- traceLog "ty"
+  -- >>>
   unSearchIndex
+  -- >>> traceFn "unSearchIndex" head
   >>> Trie.elems
+  -- >>> traceLog "elems"
   >>> concat
+  -- >>> traceLog "concat"
   >>> mapMaybe (matches ty)
+  >>> traceFn "mapMaybe (matches ty)" headMay
   >>> sortEntries
+  >>> traceFn "sorted entry scores" (map snd)
+  -- >>> reverse
+  >>> take 5
   where
   matches :: P.Type -> IndexEntry -> Maybe (IndexEntry, Int)
   matches ty1 entry@(IndexEntry { entryType = Just ty2 }) = do
@@ -466,3 +475,12 @@ parseType = parseWithTokenParser P.parsePolyType
 
 isSymbol :: Text -> Bool
 isSymbol = maybe False (const True) . parseWithTokenParser P.symbol
+
+traceLog :: Show a => String -> a -> a
+traceLog s a = trace (s <> show a) a
+
+traceFn :: Show b => String -> (a -> b) -> a -> a
+traceFn s f a = trace (s <> show (f a)) a
+
+-- first5 :: [a] -> [a]
+-- first5 = slice
